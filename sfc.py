@@ -154,6 +154,3 @@ if __name__ == '__main__':
 		df = pd.DataFrame(results, columns=table_header)
 		print(df.head())
 		df.to_csv('data/' + alphabet[letter-1] + 'license9_firms.csv')
-
-
-
