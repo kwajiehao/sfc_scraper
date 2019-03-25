@@ -116,7 +116,7 @@ def sfc_all_pages_per_letter(driver, page_no, item_lim):
 		for row in range(2, num_objects+2):
 			field1 = driver.find_element_by_xpath(table1 + str(row) + table2 + str(1) + table3).get_attribute("innerHTML")
 			field2 = html.unescape(driver.find_element_by_xpath(table1 + str(row) + table2 + str(2) + table3 + '/a').get_attribute("innerHTML"))
-			field3 = driver.find_element_by_xpath(table1 + str(row) + table2 + str(3) + table3).get_attribute("innerHTML")
+			field3 = html.unescape(driver.find_element_by_xpath(table1 + str(row) + table2 + str(3) + table3).get_attribute("innerHTML"))
 			field4 = html.unescape(driver.find_element_by_xpath(table1 + str(row) + table2 + str(6) + table3).get_attribute("innerHTML"))
 			field5 = driver.find_element_by_xpath(table1 + str(row) + table2 + str(7) + table3).get_attribute("innerHTML")
 			
@@ -153,4 +153,4 @@ if __name__ == '__main__':
 		# store results as pandas df
 		df = pd.DataFrame(results, columns=table_header)
 		print(df.head())
-		df.to_csv('data/' + alphabet[letter-1] + 'license9_firms.csv')
+		df.to_csv('data_9/' + alphabet[letter-1] + 'license9_firms.csv')
