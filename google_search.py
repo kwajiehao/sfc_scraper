@@ -1,6 +1,7 @@
-import html
 import pandas as pd
+import re
 import selenium.common.exceptions
+import sys
 import time
 import traceback
 
@@ -11,8 +12,20 @@ from selenium.webdriver.support.ui import WebDriverWait, Select
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.keys import Keys
 
+# one way to circumvent google scraper rate limits and restrictions is to open and close a new browser for each search term
+
+chrome_driver = '/Users/kwa/Documents/Code/Registered Licensees/chromedriver'
+
+# fields to import
+fields = ['CE Reference', 'Name']
+
+# import data
+license_no = sys.argv[1]
+data = pd.read_csv('data/license' + str(license_no) + '.csv', usecols=fields)
+
+
 # list of words to strip from name
-blacklist = ['co.,', 'co', 'limited', 'HK', 'Hong Kong']
+blacklist = [' AG', ' co.,', ' co', ' Limited', ' LIMITED', ' HK', ' Hong Kong']
 
 def init_driver(wait_time, headless=False, driver_path=chrome_driver):
 	"""function to initialize a chrome driver with a specified wait time to keep
@@ -24,7 +37,43 @@ def init_driver(wait_time, headless=False, driver_path=chrome_driver):
 	driver.wait = WebDriverWait(driver, wait_time)
 	return driver
 
+def search(string):
+    """get a the number of search results for a given string"""
+    try: 
+        driver = init_driver(100, headless=True)
+        driver.get('https://www.google.com/search?q=random&oq=random&aqs=chrome..69i57j0l5.2637j0j7&sourceid=chrome&ie=UTF-8')
+        
+        # box = driver.wait.until(EC.element_to_be_clickable((By.XPATH, '//*[@id="tsf"]/div[2]/div[1]/div[2]/div/div[1]/input')))
+        # box = driver.find_element(By.XPATH, '//*[@id="tsf"]/div[2]/div[1]/div[2]/div/div[1]/input')
+        box = driver.find_element(By.NAME, 'q')
 
+        # submit search in google 
+        box.clear()
+        box.send_keys(name_strip(string))
+        box.send_keys(Keys.ENTER)
+        results = driver.find_element_by_xpath('//*[@id="resultStats"]').get_attribute("innerHTML")
+        print(results)
+        driver.quit() 
+        try:
+            return(int(''.join(results.split('<')[0].split(' ')[1].split(','))))
+        except:
+            return(int(''.join(results.split('<')[0].split(' ')[0])))
+    
+    except Exception as e:
+        print('Unknown error' + ' ' + e)
+
+def name_strip(name, blacklist=blacklist):
+    """Strip names of blacklisted words and other unwanted characters"""
+    result = name.split(' (')[0]
+    result = remove_multiple_strings(result, blacklist)
+    result = result.split(',')[0]
+    result = '"' + result + '"' + ' hong kong'
+    return result
+
+def remove_multiple_strings(string, replace_list):
+  for word in replace_list:
+    string = string.replace(word, '')
+  return string
 
 def write_logs(driver, error_message, stack_trace):
 	"""function to write logs"""
@@ -36,15 +85,6 @@ def write_logs(driver, error_message, stack_trace):
 		outfile.write(error_message + '\n' + stack_trace)
 
 if __name__ == '__main__':
-	# initiate google driver so we can do search results
-	google_search = init_driver(10000)
-	google_search.get('https://www.google.com/search?q=random&oq=random&aqs=chrome..69i57j0l5.2637j0j7&sourceid=chrome&ie=UTF-8')
-
-
-
-
-
-
-
-
-anything inside brackets - split by ' ('
+    data['results'] = data.Name.apply(search)
+    data.head()
+    data.to_csv('data/license' + str(license_no) + '_search.csv')
