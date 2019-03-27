@@ -40,8 +40,8 @@ def init_driver(wait_time, headless=False, driver_path=chrome_driver):
 def search(string):
     """get a the number of search results for a given string"""
     try: 
-        driver = init_driver(100, headless=True)
-        driver.get('https://www.google.com/search?q=random&oq=random&aqs=chrome..69i57j0l5.2637j0j7&sourceid=chrome&ie=UTF-8')
+        driver = init_driver(100, headless=False)
+        driver.get('https://www.google.com/search?q=random+site&oq=random+site&aqs=chrome..69i57j69i59l2.4076j0j7&sourceid=chrome&ie=UTF-8')
         
         # box = driver.wait.until(EC.element_to_be_clickable((By.XPATH, '//*[@id="tsf"]/div[2]/div[1]/div[2]/div/div[1]/input')))
         # box = driver.find_element(By.XPATH, '//*[@id="tsf"]/div[2]/div[1]/div[2]/div/div[1]/input')
@@ -59,12 +59,12 @@ def search(string):
         except:
             return(int(''.join(results.split('<')[0].split(' ')[0])))
     
-    except Exception as e:
-        print('Unknown error' + ' ' + e)
+    except:
+        print('Unknown error')
 
 def name_strip(name, blacklist=blacklist):
     """Strip names of blacklisted words and other unwanted characters"""
-    result = name.split(' (')[0]
+    result = re.sub(' \(.*?\)','', name)
     result = remove_multiple_strings(result, blacklist)
     result = result.split(',')[0]
     result = '"' + result + '"' + ' hong kong'
